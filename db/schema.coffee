@@ -1,3 +1,3 @@
-Note = define 'Template', ->
+Bookmark = define 'Bookmark', ->
     property 'title', String
-    property 'content', String
+    property 'url', String
