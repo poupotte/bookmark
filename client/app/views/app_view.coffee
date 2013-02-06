@@ -1,9 +1,13 @@
-View      = require '../lib/view'
+View = require '../lib/view'
 AppRouter = require '../routers/app_router'
 BookmarksView = require './bookmarks_view'
+Bookmark = require '../models/bookmark_model'
 
 module.exports = class AppView extends View
     el: 'body.application'
+
+    events:
+        'click .create-button': 'onCreateClicked'
 
     template: ->
         require './templates/home'
@@ -13,18 +17,22 @@ module.exports = class AppView extends View
 
     afterRender: ->
         @bookmarksView = new BookmarksView()
-        # Add random data to check that our view-model binding works fine.
-
-        # Show loading indicator.
+        
         @bookmarksView.$el.html '<em>loading...</em>'
+        @bookmarksView.collection.fetch
+            success: => @bookmarksView.$el.find('em').remove()
 
+    onCreateClicked: =>
+        title = $('.title-field').val()
+        url = $('.url-field').val()
 
-        @bookmarksView.collection.add [
-            {title: "Cozy Cloud", url: "https://cozycloud.fr"}
-            {title: "Cozy Blog", url: "http://blog.cozycloud.fr"}
-        ]
-
-        # Method fetch loads documents from backend and store them inside collection.
-      @bookmarksView.collection.fetch
-          # Hide loading indicator when fecthing is finished.
-          success: => @bookmarksView.$el.find('em').remove()
+        if title?.length > 0 and url?.length > 0
+            bookmark = new Bookmark
+                title: title
+                url: url
+            @bookmarksView.collection.create bookmark,
+                #console.log(bookmark)
+                success: => alert "bookmark added"
+                error: => alert "Server error occured, bookmark was not saved"
+        else
+            alert 'Both fields are required'
